@@ -4,7 +4,7 @@
 
 nanopi R5S をubuntu箱として使うための，セットアップ方法及び，知っておくべき点等のメモ．ラズパイは使ったことがあるが，nanopiはよくわからん，という人向け．(自分用)
 
-nanpiに関する情報は以下のwikiに書かれている．
+nanopiに関する情報は以下のwikiに書かれている．
 
 https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S
 
@@ -13,7 +13,7 @@ https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S
 ネットワークのテスト用にnanopiを使うことが多いため，そういう用途を前提としたセットアップになっている．いわゆるデスクトップPC的な使い方は想定していないので注意．特にネットワーク周りの自動的な設定は極力排除する方針．
 
 
-## SDカードのパーティション
+## SDカードのパーティションについて
 
 32GのSDカードを使って初期イメージを書き込んだ状態で，以下のようにパーティションが設定される．
 
@@ -273,3 +273,81 @@ net.ipv4.udp_wmem_min = 16384
 EOF
 ```
 
+## GPIOを使うには
+
+ピン配置についてWikiを参照．https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S
+
+コネクタがFPCになっており，GPIOを使うためにはケーブルとピッチ変換基板を購入する必要あり．
+
+12ピン，0.5mmピッチ，という物が必要．amazonなら，
+* ケーブル：https://www.amazon.co.jp/dp/B09V2K1S2C
+* 基板：https://www.amazon.co.jp/dp/B07H2CN4TZ/
+
+### 現状の設定確認
+
+以下は，1PPS用の設定が追加されているので，デフォルトとは多少違っているので注意．
+
+```shell
+$ sudo cat /sys/kernel/debug/gpio
+gpiochip0: GPIOs 0-31, parent: platform/fdd60000.gpio0, gpio0:
+ gpio-0   (                    |reset               ) out hi
+ gpio-6   (                    |vcc5v0-host-regulato) out hi
+ gpio-14  (                    |reset               ) out hi
+ gpio-21  (                    |snps,reset          ) out hi ACTIVE LOW
+ gpio-28  (                    |gpio-regulator      ) out lo
+
+gpiochip1: GPIOs 32-63, parent: platform/fe740000.gpio1, gpio1:
+
+gpiochip2: GPIOs 64-95, parent: platform/fe750000.gpio2, gpio2:
+ gpio-81  (                    |wan_led             ) out lo
+
+gpiochip3: GPIOs 96-127, parent: platform/fe760000.gpio3, gpio3:
+ gpio-117 (                    |pps@3               ) in  lo
+ gpio-126 (                    |lan1_led            ) out lo
+ gpio-127 (                    |lan2_led            ) out lo
+
+gpiochip4: GPIOs 128-159, parent: platform/fe770000.gpio4, gpio4:
+ gpio-128 (                    |K1                  ) in  hi ACTIVE LOW
+ gpio-154 (                    |sys_led             ) out lo
+
+gpiochip5: GPIOs 511-511, parent: platform/rk805-pinctrl, rk817-gpio, can sleep:
+
+```
+
+### GPIO番号の算出
+
+nanopi の wikiだけでは計算方法がわからないので，以下のページを参照．
+
+https://wiki.t-firefly.com/en/ROC-RK3568-PC/driver_gpio.html
+
+上記ページからの引用：
+```text
+bank = 4;      //GPIO4_D5 => 4, bank ∈ [0,4]
+group = 3;      //GPIO4_D5 => 3, group ∈ {(A=0), (B=1), (C=2), (D=3)}
+X = 5;       //GPIO4_D5 => 5, X ∈ [0,7]
+number = group * 8 + X = 3 * 8 + 5 = 29
+pin = bank*32 + number= 4 * 32 + 29 = 157;
+```
+
+例えば，GPIO3_C2 を操作したいのであれば，pinは
+```text
+3 * 32 + 2 * 8 + 2 = 114
+```
+となる．
+
+### GPIOを操作してみる
+
+```shell
+$ sudo su
+# cd /sys/class/gpio
+# echo 114 > export
+# ls
+export  gpio114  gpiochip0  gpiochip128  gpiochip32  gpiochip511  gpiochip64  gpiochip96  unexport
+# cd gpio114
+# ls
+active_low  device  direction  edge  power  subsystem  uevent  value
+# echo out > direction
+# echo 1 > value
+```
+
+とすれば，GPIO3_C2 (pin5)が1になる。
