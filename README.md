@@ -4,11 +4,25 @@
 
 nanopi R5S をubuntu箱として使うための，セットアップ方法及び，知っておくべき点等のメモ．ラズパイは使ったことがあるが，nanopi R5Sはよくわからん，という人向け．(自分用)
 
-nanopiには複数の種類があり，それぞれ全く別物になっている．ここでは，R5Sのみを対象としている．
+nanopiには複数の種類があり，それぞれ全く別物になっている．ここでは，R5Sのみを対象としている．また，openWRT用のセットアップ等もあるが，ここではubuntuとして使うためのセットアップの説明を行う．
+
+ちなみに，セットアップ後にバージョンを確認するとこうなる．
+
+```shell
+$ cat /etc/lsb-release
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=20.04
+DISTRIB_CODENAME=focal
+DISTRIB_DESCRIPTION="Ubuntu 20.04.5 LTS"
+```
 
 nanopi R5Sに関する情報は以下のwikiに書かれている．
 
 https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S
+
+ベンチマーク等については下記のサイトが詳しい．
+
+https://www.cnx-software.com/2022/06/05/nanopi-r5s-preview-part-2-ubuntu-20-04-friendlycore/
 
 ＊注＊
 
@@ -71,7 +85,7 @@ https://github.com/friendlyarm/sd-fuse_rk3568
 
 ビルド方法も上記リポジトリに書かれているがあまり親切ではない．
 まずは，スクリプト本体と，ファイルシステムのイメージをダウンロードする．
-ちなみに，ここでビルドするターゲットは friendlycore-focal-arm64 であるとする．
+ちなみに，ここでビルドするターゲットは ubuntu なので，friendlycore-focal-arm64 を選択する．
 
 ```
 $ git clone https://github.com/friendlyarm/sd-fuse_rk3568
@@ -361,3 +375,9 @@ active_low  device  direction  edge  power  subsystem  uevent  value
 ```
 
 とすれば，GPIO3_C2 (pin5)が1になる。
+
+## M.2コネクタにSSDを取り付ける
+
+使えるのは，M.2 type 2280 というサイズのNVMe SSD．
+SSDを搭載すると，/dev/nvme0n1 として見える．
+fdiskでパーティションを作成し，mkfsでファイルシステムを作成してマウントする．
