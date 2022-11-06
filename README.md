@@ -6,7 +6,7 @@ nanopi R5S をubuntu箱として使うための，セットアップ方法及び
 
 nanopiには複数の種類があり，それぞれ全く別物になっている．ここでは，R5Sのみを対象としている．また，openWRT用のセットアップ等もあるが，ここではubuntuとして使うためのセットアップの説明を行う．
 
-ちなみに，セットアップ後にバージョンを確認するとこうなる．
+ちなみに，セットアップ後にディストリビューションのバージョンを確認するとこうなる．
 
 ```shell
 $ cat /etc/lsb-release
@@ -151,8 +151,8 @@ sudo ./build-rootfs-img.sh out/rootfs_new friendlycore-focal-arm64
 $ ./mk-sd-image.sh friendlycore-focal-arm64
 ```
 
-これで img ファイルが生成されるので，SDリーダを接続してddコマンドでSDカードへ書き込む．
-SDカードへイメージを書き込むと，SDカードのパーティション8,9がファイルシステムになっているので，必要に応じてマウントしてファイルを書き変える．
+これで img ファイルが生成されるので，SDリーダ・ライタを接続してddコマンドでSDカードへ書き込む．
+SDカードへイメージを書き込むと，SDカードのパーティション8,9がファイルシステムになっているので，必要に応じてマウントしてファイルを書き変える．例えばIPアドレスの設定をこの段階で行ってしまえば，ブート直後からsshで外部からアクセスできる状態になるので便利．
 
 ## ブートと更新
 
@@ -170,7 +170,7 @@ $ sudo apt-get upgrade
 $ sudo apt-get install nano
 ```
 
-＊ 自分の作業にとって重要なツールは apt-get で入れるのは避けた方が良い ＊
+＊ 自分の作業にとって特に重要なツールは apt-get で入れるのは避けた方が良い ＊
 
 バージョンが古かったり，予期せぬ設定があったりして，ロクなことがない．自前でビルドした方が良い．
 
@@ -271,7 +271,6 @@ $ sudo systemctl disable motd-news.timer
 $ sudo systemctl disable systemd-resolved.service
 $ sudo systemctl disable lcd2usb.service
 $ sudo systemctl disable avahi-daemon
-$ echo "AVAHI_DAEMON_DETECT_LOCAL=0" | sudo tee "/etc/default/avahi-daemon"
 $ sudo systemctl disable wpa_supplicant
 $ sudo systemctl disable ModemManager
 $ sudo systemctl disable NetworkManager
