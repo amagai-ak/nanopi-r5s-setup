@@ -74,7 +74,7 @@ nanopi R5S は，apt-getでカーネルヘッダを入れることも出来ず�
 最低限，カーネルのビルドができるだけのツールがx86マシンに入っていることが必要．apt-getで入れる．
 
 ```shell
-$ sudo apt-get install -y build-essential bc bison flex libelf-dev libssl-dev libncurses5-dev
+$ sudo apt-get install -y build-essential bc bison flex libelf-dev libssl-dev libncurses5-dev android-sdk-libsparse-utils
 ```
 
 ### ビルドスクリプトの入手
@@ -133,6 +133,17 @@ $ make ARCH=arm64 menuconfig
 ```
 $ sudo ./build-kernel.sh friendlycore-focal-arm64
 ```
+
+### rootfsイメージの再構築
+
+必要が無ければ再構築作業は不要．もし，rootfsの中を編集したい場合には，sd-fuse_rk3568/out/rootfs_new の中を編集する．その際，パーミションやUID/GID等に注意すること．基本的にroot権限で編集する必要あり．
+
+編集を終えたら，rootfsのイメージを再構築する．
+
+```shell
+sudo ./build-rootfs-img.sh out/rootfs_new friendlycore-focal-arm64
+```
+
 
 ### SDカードのイメージを作成
 
