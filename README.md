@@ -2,15 +2,17 @@
 
 ## 概要
 
-nanopi R5S をubuntu箱として使うための，セットアップ方法及び，知っておくべき点等のメモ．ラズパイは使ったことがあるが，nanopiはよくわからん，という人向け．(自分用)
+nanopi R5S をubuntu箱として使うための，セットアップ方法及び，知っておくべき点等のメモ．ラズパイは使ったことがあるが，nanopi R5Sはよくわからん，という人向け．(自分用)
 
-nanopiに関する情報は以下のwikiに書かれている．
+nanopiには複数の種類があり，それぞれ全く別物になっている．ここでは，R5Sのみを対象としている．
+
+nanopi R5Sに関する情報は以下のwikiに書かれている．
 
 https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S
 
 ＊注＊
 
-ネットワークのテスト用にnanopiを使うことが多いため，そういう用途を前提としたセットアップになっている．いわゆるデスクトップPC的な使い方は想定していないので注意．特にネットワーク周りの自動的な設定は極力排除する方針．
+ネットワークのテスト用にnanopiを使うことが多いため，そういう用途を前提としたセットアップになっている．いわゆるデスクトップPC的な使い方は想定していないので注意．GUIも使わない設定にする．特にネットワーク周りの自動的な設定は極力排除する方針．
 
 
 ## SDカードのパーティションについて
@@ -45,7 +47,7 @@ Number  Start   End     Size    File system  Name      Flags
 
 ## 一番最初にやるべき事はSDイメージの再構築
 
-nanpi R5S は，apt-getでカーネルヘッダを入れることも出来ず，そのままではドライバのビルドの際に困ることになる．また，カーネルのconfigを確認するときにも困る．
+nanopi R5S は，apt-getでカーネルヘッダを入れることも出来ず，そのままではドライバのビルドの際に困ることになる．また，カーネルのconfigを確認するときにも困る．
 本家のwikiには，/optにヘッダが入っている旨が書かれているが，実際にイメージをダウンロードしてSDに書いてみると入っていない．
 
 このため，カーネルのビルドを含め，SDカードのイメージを一度手元で構築しておくと後々楽になる．
@@ -225,8 +227,19 @@ $ sudo systemctl set-default multi-user.target
 $ systemctl -l
 ```
 
-明らかに要らないやつを止める．
+enableかdisableかの一覧を出すには
 ```shell
+$ systemctl list-unit-files
+```
+
+何をもって余計とするかは用途次第だが，ここでは，
+* 勝手にネットワークの設定をされると困る
+* 通信は必要最低限にして欲しい(明示的に指示した通信以外するな)
+* マルチキャストは使わないで欲しい
+
+という方針で，要らないやつを止める．
+```shell
+$ sudo systemctl disable gdm3
 $ sudo systemctl disable apt-daily-upgrade.timer
 $ sudo systemctl disable apt-daily.timer
 $ sudo systemctl disable motd-news.timer
@@ -234,8 +247,13 @@ $ sudo systemctl disable systemd-resolved.service
 $ sudo systemctl disable lcd2usb.service
 $ sudo systemctl disable avahi-daemon
 $ echo "AVAHI_DAEMON_DETECT_LOCAL=0" | sudo tee "/etc/default/avahi-daemon"
+$ sudo systemctl disable wpa_supplicant
+$ sudo systemctl disable ModemManager
+$ sudo systemctl disable NetworkManager
+$ sudo systemctl disable networkd-dispatcher.service
 ```
 
+パケットキャプチャを行う予定があるなら，NetworkManagerは絶対に止めて置くべき．トラブルの元凶．
 
 ### timesyncdを止める
 
@@ -246,14 +264,6 @@ $ sudo systemctl stop systemd-timesyncd.service
 $ sudo systemctl disable systemd-timesyncd.service
 ```
 
-### NetworkManagerを止める
-
-インターフェースの操作に介入してくる，トラブルの元凶．ネットワークのテスト等をする用途であれば確実に停止しておくべき．
-
-```shell
-$ sudo systemctl stop NetworkManager.service
-$ sudo systemctl disable NetworkManager.service
-```
 
 ## Networkのバッファサイズの設定
 
@@ -316,7 +326,7 @@ gpiochip5: GPIOs 511-511, parent: platform/rk805-pinctrl, rk817-gpio, can sleep:
 
 ### GPIO番号の算出
 
-nanopi の wikiだけでは計算方法がわからないので，以下のページを参照．
+nanopi R5S の wikiだけでは計算方法がわからないので，同じチップを使っている以下のページを参照．
 
 https://wiki.t-firefly.com/en/ROC-RK3568-PC/driver_gpio.html
 
