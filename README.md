@@ -262,9 +262,8 @@ $ systemctl list-unit-files
 * 通信は必要最低限にして欲しい(明示的に指示した通信以外するな)
 * マルチキャストは使わないで欲しい
 
-という方針で，要らないやつを止める．
+という方針で，要らないやつを止める．どんなunitが存在するかはインストールしたパッケージ次第なので，環境によっては下記のunitが無い場合もある．そこは自分の環境にインストールされているunitを確認して実行すること．
 ```shell
-$ sudo systemctl disable gdm3
 $ sudo systemctl disable apt-daily-upgrade.timer
 $ sudo systemctl disable apt-daily.timer
 $ sudo systemctl disable motd-news.timer
