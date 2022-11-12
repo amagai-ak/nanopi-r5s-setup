@@ -390,3 +390,77 @@ active_low  device  direction  edge  power  subsystem  uevent  value
 使えるのは，M.2 type 2280 というサイズのNVMe SSD．
 SSDを搭載すると，/dev/nvme0n1 として見える．
 fdiskでパーティションを作成し，mkfsでファイルシステムを作成してマウントする．
+
+## M.2コネクタでPCIeのカードは動くか？
+
+i210のLANカードを試した所問題は無さそう．
+
+![PCIe](img/pcie.jpg)
+
+```text
+$ sudo lspci -t -v
+-+-[0002:20]---00.0-[21]----00.0  Intel Corporation I210 Gigabit Network Connection
+ +-[0001:10]---00.0-[11]----00.0  Realtek Semiconductor Co., Ltd. RTL8125 2.5GbE Controller
+ \-[0000:00]---00.0-[01-ff]----00.0  Realtek Semiconductor Co., Ltd. RTL8125 2.5GbE Controller
+```
+
+```
+$ sudo lspci -s 0002:21:00.0 -vv
+0002:21:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network Connection (rev 03)
+        Subsystem: Intel Corporation Ethernet Server Adapter I210-T1
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Interrupt: pin A routed to IRQ 0
+        Region 0: Memory at f0200000 (32-bit, non-prefetchable) [disabled] [size=1M]
+        Region 3: Memory at f0400000 (32-bit, non-prefetchable) [disabled] [size=16K]
+        Expansion ROM at f0300000 [virtual] [disabled] [size=1M]
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [50] MSI: Enable- Count=1/1 Maskable+ 64bit+
+                Address: 0000000000000000  Data: 0000
+                Masking: 00000000  Pending: 00000000
+        Capabilities: [70] MSI-X: Enable- Count=5 Masked-
+                Vector table: BAR=3 offset=00000000
+                PBA: BAR=3 offset=00002000
+        Capabilities: [a0] Express (v2) Endpoint, MSI 00
+                DevCap: MaxPayload 512 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset+ SlotPowerLimit 0.000W
+                DevCtl: CorrErr- NonFatalErr- FatalErr- UnsupReq-
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+ FLReset-
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr- NonFatalErr- FatalErr- UnsupReq- AuxPwr+ TransPend-
+                LnkCap: Port #4, Speed 2.5GT/s, Width x1, ASPM L0s L1, Exit Latency L0s <2us, L1 <16us
+                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s (ok), Width x1 (ok)
+                        TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, NROPrPrP-, LTR-
+                         10BitTagComp-, 10BitTagReq-, OBFF Not Supported, ExtFmt-, EETLPPrefix-
+                         EmergencyPowerReduction Not Supported, EmergencyPowerReductionInit-
+                         FRS-, TPHComp-, ExtTPHComp-
+                         AtomicOpsCap: 32bit- 64bit- 128bitCAS-
+                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled
+                         AtomicOpsCtl: ReqEn-
+                LnkCtl2: Target Link Speed: 2.5GT/s, EnterCompliance- SpeedDis-
+                         Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
+                         Compliance De-emphasis: -6dB
+                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, EqualizationPhase1-
+                         EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
+        Capabilities: [100 v2] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UESvrt: DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- AdvNonFatalErr-
+                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- AdvNonFatalErr+
+                AERCap: First Error Pointer: 00, ECRCGenCap+ ECRCGenEn- ECRCChkCap+ ECRCChkEn-
+                        MultHdrRecCap- MultHdrRecEn- TLPPfxPres- HdrLogCap-
+                HeaderLog: 00000000 00000000 00000000 00000000
+        Capabilities: [140 v1] Device Serial Number 00-1b-21-ff-ff-ec-40-89
+        Capabilities: [1a0 v1] Transaction Processing Hints
+                Device specific mode supported
+                Steering table in TPH capability structure
+
+```
+
