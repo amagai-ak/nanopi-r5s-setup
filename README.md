@@ -211,12 +211,34 @@ echo 1 > /sys/class/leds/lan2_led/link
 echo 1 > /sys/class/leds/lan2_led/tx
 ```
 
-## WANのLEDの光り方を変える
+## WANコネクタ(RJ45)のLEDの光り方を変える
 
 LEDは緑と黄色があるが，Link/Actで緑点滅，GbEリンクで黄色点灯，とすることにする．
 
 設定はPHYであるRTL8211F-CGのレジスタを変更することで行う．詳しくはデータシートを参照のこと．緑がLED2, 黄色がLED1であり，PHYのLED0は使われていない模様．
 レジスタの操作にはmdio-toolを用いる．自前でビルドの必要あり．
+
+LED control register(Ext:0xd04, Addr:0x10)のビットの割り当てはデータシートによれば以下の通り．
+
+|Bit|Name|Desc|
+|---|----|----|
+| 15|予約|  - |
+| 14|LED2_ACT|LED2 送受信|
+| 13|LED2_LINK_1000|LED2 1Gリンク|
+| 12|予約|  - |
+| 11|LED2_LINK_100|LED2 100Mリンク|
+| 10|LED2_LINK_10|LED2 10Mリンク|
+| 9|LED1_ACT|LED1 送受信|
+| 8|LED1_LINK_1000|LED1 1Gリンク|
+| 7|予約|  - |
+| 6|LED1_LINK_100|LED1 100Mリンク|
+| 5|LED1_LINK_10|LED1 10Mリンク|
+| 4|LED0_ACT|LED0 送受信|
+| 3|LED0_LINK_1000|LED0 1Gリンク|
+| 2|予約|  - |
+| 1|LED0_LINK_100|LED0 100Mリンク|
+| 0|LED0_LINK_10|LED0 10Mリンク|
+
 
 ```
 $ git clone https://github.com/PieVo/mdio-tool.git
