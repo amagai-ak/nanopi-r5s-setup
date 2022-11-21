@@ -188,7 +188,7 @@ $ sudo dpkg-reconfigure tzdata
 $ sudo dpkg-reconfigure locales
 ```
 
-## LANのLEDが点灯するようにする
+## 本体裏のLANのLEDが点灯するようにする
 
 デフォルトの状態では，本体裏側のLEDは赤いSYSがチカチカしているだけで，LANケーブルを挿しても光らない．光るように設定する．以下の内容を /etc/rc.local へ追加する．(exit 0の前へ)
 
@@ -210,6 +210,42 @@ echo eth2 > /sys/class/leds/lan2_led/device_name
 echo 1 > /sys/class/leds/lan2_led/link
 echo 1 > /sys/class/leds/lan2_led/tx
 ```
+
+## WANのLEDの光り方を変える
+
+LEDは緑と黄色があるが，Link/Actで緑点滅，GbEリンクで黄色点灯，とすることにする．
+
+設定はPHYであるRTL8211F-CGのレジスタを変更することで行う．詳しくはデータシートを参照のこと．緑がLED2, 黄色がLED1であり，PHYのLED0は使われていない模様．
+レジスタの操作にはmdio-toolを用いる．自前でビルドの必要あり．
+
+```
+$ git clone https://github.com/PieVo/mdio-tool.git
+$ cd mdio-tool
+$ cmake .
+$ make
+$ sudo make install
+```
+
+以下のようにする．(rootで実行の必要あり)
+
+```
+/usr/local/bin/mdio-tool w eth0 0x1f 0xd04
+/usr/local/bin/mdio-tool w eth0 0x11 0x0
+/usr/local/bin/mdio-tool w eth0 0x10 0x6d00
+/usr/local/bin/mdio-tool w eth0 0x1f 0x00
+```
+
+処理としては，
+
+1. 拡張ページ 0xd04 を選択する
+2. EEE LED Control レジスタ 0x11 を0にする
+3. LED Control レジスタ 0x10 に 0x6d00 を書く
+4. ページを元に戻す
+
+となっている．
+
+上記コマンドをrc.localに追記して，起動時に自動的に設定されるようにする．
+
 
 ## 固定IPにする
 
