@@ -522,3 +522,52 @@ $ sudo lspci -s 0002:21:00.0 -vv
 
 ```
 
+## LANで利用可能なタイムスタンプの確認
+
+パケットキャプチャを行う際に，ハードウエアタイムスタンパが利用可能か確認する．
+
+```
+$ sudo dumpcap -i eth0 --list-time-stamp-types
+Timestamp types of the interface (use option --time-stamp-type to set):
+  host (Host)
+  adapter_unsynced (Adapter, not synced with system time)
+$ sudo dumpcap -i eth1 --list-time-stamp-types
+Timestamp types of the interface (use option --time-stamp-type to set):
+  host (Host)
+$ sudo dumpcap -i eth2 --list-time-stamp-types
+Timestamp types of the interface (use option --time-stamp-type to set):
+  host (Host)
+```
+
+eth0のみが，ハードウエアタイムスタンパに対応している模様．eth1,2は利用不可能．
+
+```
+$ ethtool -T eth0
+Time stamping parameters for eth0:
+Capabilities:
+        hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
+        software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+        hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+        hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+PTP Hardware Clock: 0
+Hardware Transmit Timestamp Modes:
+        off                   (HWTSTAMP_TX_OFF)
+        on                    (HWTSTAMP_TX_ON)
+Hardware Receive Filter Modes:
+        none                  (HWTSTAMP_FILTER_NONE)
+        all                   (HWTSTAMP_FILTER_ALL)
+        ptpv1-l4-event        (HWTSTAMP_FILTER_PTP_V1_L4_EVENT)
+        ptpv1-l4-sync         (HWTSTAMP_FILTER_PTP_V1_L4_SYNC)
+        ptpv1-l4-delay-req    (HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ)
+        ptpv2-l4-event        (HWTSTAMP_FILTER_PTP_V2_L4_EVENT)
+        ptpv2-l4-sync         (HWTSTAMP_FILTER_PTP_V2_L4_SYNC)
+        ptpv2-l4-delay-req    (HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ)
+        ptpv2-event           (HWTSTAMP_FILTER_PTP_V2_EVENT)
+        ptpv2-sync            (HWTSTAMP_FILTER_PTP_V2_SYNC)
+        ptpv2-delay-req       (HWTSTAMP_FILTER_PTP_V2_DELAY_REQ)
+```
+
+eth1,2も，RTL8125のドライバを，設定を変えて再コンパイルするとPTP機能を有効にできるが汎用タイムスタンパとしては使えない．ついでに言うと，eth1,2はPHCの挙動が不安定で使い物になるかどうか良くわからない．うまく動かすための設定がまだわからない．
+
