@@ -364,6 +364,29 @@ net.ipv4.udp_wmem_min = 16384
 EOF
 ```
 
+輻輳制御やキューイングのアルゴリズムを指定しておきたい場合には，上記の設定に，例えば，
+```
+net.core.default_qdisc=fq
+net.ipv4.tcp_congestion_control=bbr
+```
+といったものを追記する．
+
+ちなみに設定可能なパラメータ一覧は
+```
+$ sudo sysctl -a
+```
+で得られる．
+
+```
+$ sudo sysctl net.ipv4.tcp_congestion_control=cubic
+```
+とすれば値を設定でき，
+
+```
+$ sudo sysctl net.ipv4.tcp_congestion_control
+```
+で，現在の設定値が表示される．
+
 ## GPIOを使うには
 
 ピン配置についてWikiを参照．https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S
@@ -522,7 +545,9 @@ $ sudo lspci -s 0002:21:00.0 -vv
 
 ```
 
-## LANで利用可能なタイムスタンプの確認
+## 有線LANのパケットキャプチャに関するメモ
+
+### LANで利用可能なタイムスタンプの確認
 
 パケットキャプチャを行う際に，ハードウエアタイムスタンパが利用可能か確認する．
 
@@ -570,4 +595,84 @@ Hardware Receive Filter Modes:
 ```
 
 eth1,2も，RTL8125のドライバを，設定を変えて再コンパイルするとPTP機能を有効にできるが汎用タイムスタンパとしては使えない．ついでに言うと，eth1,2はPHCの挙動が不安定で使い物になるかどうか良くわからない．うまく動かすための設定がまだわからない．
+
+
+### セグメンテーションオフロードの確認
+
+ドライバレベルでTCPのパケットを集約する機能がある．通常の用途ではこの機能がONの方がパフォーマンスが出るが，LAN上に流れているパケットとは違う形の(LAN上には本来存在しないはずの)パケットがキャプチャされてしまうため，パケットキャプチャを行う際にはこの機能をOFFにしておく必要がある．
+
+ethtookの-kオプションで確認する．
+
+```
+$ ethtool -k eth0
+Features for eth0:
+rx-checksumming: on
+tx-checksumming: on
+        tx-checksum-ipv4: on
+        tx-checksum-ip-generic: off [fixed]
+        tx-checksum-ipv6: on
+        tx-checksum-fcoe-crc: off [fixed]
+        tx-checksum-sctp: off [fixed]
+scatter-gather: on
+        tx-scatter-gather: on
+        tx-scatter-gather-fraglist: off [fixed]
+tcp-segmentation-offload: on
+        tx-tcp-segmentation: on
+        tx-tcp-ecn-segmentation: off [fixed]
+        tx-tcp-mangleid-segmentation: off
+        tx-tcp6-segmentation: on
+generic-segmentation-offload: on
+generic-receive-offload: on
+large-receive-offload: off [fixed]
+rx-vlan-offload: on [fixed]
+tx-vlan-offload: off [fixed]
+ntuple-filters: off [fixed]
+receive-hashing: off [fixed]
+highdma: on [fixed]
+rx-vlan-filter: off [fixed]
+vlan-challenged: off [fixed]
+tx-lockless: off [fixed]
+netns-local: off [fixed]
+tx-gso-robust: off [fixed]
+tx-fcoe-segmentation: off [fixed]
+tx-gre-segmentation: off [fixed]
+tx-gre-csum-segmentation: off [fixed]
+tx-ipxip4-segmentation: off [fixed]
+tx-ipxip6-segmentation: off [fixed]
+tx-udp_tnl-segmentation: off [fixed]
+tx-udp_tnl-csum-segmentation: off [fixed]
+tx-gso-partial: off [fixed]
+tx-tunnel-remcsum-segmentation: off [fixed]
+tx-sctp-segmentation: off [fixed]
+tx-esp-segmentation: off [fixed]
+tx-udp-segmentation: on
+tx-gso-list: off [fixed]
+fcoe-mtu: off [fixed]
+tx-nocache-copy: off
+loopback: off [fixed]
+rx-fcs: off [fixed]
+rx-all: off [fixed]
+tx-vlan-stag-hw-insert: off [fixed]
+rx-vlan-stag-hw-parse: on [fixed]
+rx-vlan-stag-filter: off [fixed]
+l2-fwd-offload: off [fixed]
+hw-tc-offload: on
+esp-hw-offload: off [fixed]
+esp-tx-csum-hw-offload: off [fixed]
+rx-udp_tunnel-port-offload: off [fixed]
+tls-hw-tx-offload: off [fixed]
+tls-hw-rx-offload: off [fixed]
+rx-gro-hw: off [fixed]
+tls-hw-record: off [fixed]
+rx-gro-list: off
+macsec-hw-offload: off [fixed]
+```
+
+このうち，gro, gsoの2つをOFFにしておく．eth0でキャプチャするのであれば，
+
+```
+sudo ethtool -K eth0 gro off
+sudo ethtool -K eth0 gso off
+```
+としておく．
 
