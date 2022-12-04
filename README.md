@@ -670,9 +670,9 @@ macsec-hw-offload: off [fixed]
 
 このうち，gro, gsoの2つをOFFにしておく．eth0でキャプチャするのであれば，
 
-```
-sudo ethtool -K eth0 gro off
-sudo ethtool -K eth0 gso off
+```shell
+$ sudo ethtool -K eth0 gro off
+$ sudo ethtool -K eth0 gso off
 ```
 としておく．
 
