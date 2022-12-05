@@ -174,6 +174,16 @@ $ sudo apt-get install nano
 
 バージョンが古かったり，予期せぬ設定があったりして，ロクなことがない．自前でビルドした方が良い．
 
+## sshのhost_keyの再作成
+
+ダウンロードしたファイルシステムにはsshのhost keyも含まれており，そのまま複製すると全て同じhost keyを持つことになってしまう．このため，一旦host keyを消去して，再生成する．
+
+```
+$ sudo rm -f /etc/ssh/ssh_host_*
+$ sudo dpkg-reconfigure openssh-server
+```
+
+
 ## タイムゾーンの設定
 
 ```shell
