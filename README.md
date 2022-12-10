@@ -183,6 +183,8 @@ $ sudo rm -f /etc/ssh/ssh_host_*
 $ sudo dpkg-reconfigure openssh-server
 ```
 
+sshの設定に関して，セキュアにきちんと設定するには，SSH Hardening Guides を参照．
+https://www.sshaudit.com/hardening_guides.html
 
 ## タイムゾーンの設定
 
