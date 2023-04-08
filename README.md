@@ -144,6 +144,23 @@ $ sudo ./build-kernel.sh friendlycore-focal-arm64
 sudo ./build-rootfs-img.sh out/rootfs_new friendlycore-focal-arm64
 ```
 
+### rootfsとして使うパーティションを変更するには
+
+SDカードのどのパーティションをrootfs及びoverlayに割り当てるかという，カーネルのコマンドラインパラメータ指定は sd-fuse_rk3568/friendlycore-focal-arm64/dtbo.img で行われている．(元になるのは sd-fuse_rk3568/prebuilt/dtbo.img か？ )
+
+dtbo.imgファイルの形式については，https://source.android.com/docs/core/architecture/dto/partitions?hl=ja を参照．
+
+このファイルはバイナリで配布されており，構築するためのソースやスクリプトがsd-fuse_rk3568には含まれていない．このファイルを作成するにはandroidのツールが必要で少々手間．パーティションの名称を変更する程度であれば，dtbo.imgファイルをバイナリエディタで書き変えてしまうのが早い．配布されているimgファイルはデバイスツリーを2つ含んでいるが，後の方のツリーが起動時に参照されており，そちら側を書き換えればOK．
+バイナリエディタでdtbo.imgを開き，
+```
+data=/dev/mmcblk0p9
+```
+となっている部分を見つけて，例えばそこを
+```
+data=/dev/nvme0n1p1
+```
+のように書き変える．こうするとNVMe SSDがoverlayとして使われる．(予めSSDにはext4のパーティションを作っておく必要あり．)
+
 
 ### SDカードのイメージを作成
 
