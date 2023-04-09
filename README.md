@@ -202,6 +202,8 @@ $ sudo apt-get install nano
 ```
 $ sudo ln -s /home/pi/kernel-rk3568 /lib/modules/5.10.110/build
 ```
+
+kernelのツリーの一部にホスト用のツールがあり，そこはx86のバイナリになっているので，一旦cleanして再度makeし，ホスト用の部分はarm64用に再構築する必要あり．kernel全部を作り直す必要は無いので，host用のコンパイルが終わったところで停止してしまって構わない．
 これで，ドライバをnetからダウンロードしたときに，nanopi上で out of tree コンパイルが出来る．
 
 
